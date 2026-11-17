@@ -13,9 +13,12 @@ import {
   XCircle,
 } from 'lucide-react';
 import { BUILDINGS_META } from '../data/questions';
+import { getLocalizedQuestion } from '../data/questionTranslations';
+import { getTranslations } from '../i18n/translations';
 import {
   BuildingCode,
   GameMode,
+  LanguageCode,
   OptionLetter,
   QuestionItem,
   QuizResultSummary,
@@ -31,6 +34,7 @@ interface QuizModalProps {
   questionBank: QuestionItem[];
   filterBuilding: BuildingCode | 'ALL';
   mode: GameMode;
+  language: LanguageCode;
   playerName: string;
   currentCoins: number;
   config: TeacherConfig;
@@ -93,6 +97,7 @@ export function QuizModal({
   questionBank,
   filterBuilding,
   mode,
+  language,
   playerName,
   currentCoins,
   config,
@@ -102,6 +107,8 @@ export function QuizModal({
   onFinish,
   onExit,
 }: QuizModalProps) {
+  const t = getTranslations(language);
+
   const sessionQuestions = useMemo(() => {
     let pool: QuestionItem[];
     if (filterBuilding !== 'ALL' && mode === 'adventure') {
@@ -112,7 +119,9 @@ export function QuizModal({
       pool = shuffleArray(questionBank);
     }
     const limit = Math.min(config.questionLimit || 50, pool.length);
-    return pool.slice(0, limit).map(prepareShuffledQuestion);
+    return pool
+      .slice(0, limit)
+      .map((q) => prepareShuffledQuestion(getLocalizedQuestion(q, language)));
     // Freeze session pool on modal mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -156,11 +165,11 @@ export function QuizModal({
     const total = sessionQuestions.length || 1;
     const score = Math.round((finalCorrect / total) * 100);
     const accuracy = Math.round((finalCorrect / total) * 100);
-    let predicate = '📘 Keep Learning';
-    if (score >= 90) predicate = '🏆 Informatics Champion';
-    else if (score >= 80) predicate = '🌟 Genius Explorer';
-    else if (score >= 70) predicate = '💡 Smart Thinker';
-    else if (score >= 60) predicate = '📊 Data Apprentice';
+    let predicate = t.quiz.predicates.keepLearning;
+    if (score >= 90) predicate = t.quiz.predicates.champion;
+    else if (score >= 80) predicate = t.quiz.predicates.genius;
+    else if (score >= 70) predicate = t.quiz.predicates.smart;
+    else if (score >= 60) predicate = t.quiz.predicates.apprentice;
 
     onFinish({
       score,
@@ -201,19 +210,6 @@ export function QuizModal({
   const pct = Math.round(((currentIndex + 1) / total) * 100);
   const bInfo = BUILDINGS_META[currentQ.building] || BUILDINGS_META.A;
 
-  const modeBadgeMap: Record<GameMode, string> = {
-    adventure: 'Petualangan Kota',
-    challenge: 'Quiz Challenge',
-    practice: 'Practice Mode',
-  };
-
-  const typeLabelMap: Record<QuestionItem['type'], string> = {
-    single: 'Pilihan Ganda',
-    complex: 'Pilihan Ganda Kompleks (>1 Jawaban)',
-    truefalse: 'Benar / Salah (3 Pernyataan)',
-    short: 'Isian Singkat',
-  };
-
   const toggleComplexOption = (letter: OptionLetter) => {
     if (answered) return;
     setSelectedComplex((prev) => {
@@ -240,7 +236,7 @@ export function QuizModal({
 
     if (currentQ.type === 'single' && currentQ.options && currentQ.answer) {
       if (!selectedSingle) {
-        onShowToast('⚠️ Pilih salah satu jawaban terlebih dahulu!', 'warning');
+        onShowToast(t.quiz.warnSelectSingle, 'warning');
         return;
       }
       isCorrect = selectedSingle === currentQ.answer;
@@ -248,7 +244,7 @@ export function QuizModal({
       correctAnswerStr = `${currentQ.answer}. ${currentQ.options[currentQ.answer]}`;
     } else if (currentQ.type === 'complex' && currentQ.options && currentQ.complexAnswers) {
       if (selectedComplex.length === 0) {
-        onShowToast('⚠️ Pilih minimal satu jawaban yang benar!', 'warning');
+        onShowToast(t.quiz.warnSelectComplex, 'warning');
         return;
       }
       const sortedSel = [...selectedComplex].sort();
@@ -261,10 +257,10 @@ export function QuizModal({
     } else if (currentQ.type === 'truefalse' && currentQ.statements && currentQ.tfAnswers) {
       const len = currentQ.statements.length;
       if (selectedTF.slice(0, len).some((v) => v === null)) {
-        onShowToast('⚠️ Tentukan Benar atau Salah untuk seluruh pernyataan!', 'warning');
+        onShowToast(t.quiz.warnSelectTF, 'warning');
         return;
       }
-      const labels = currentQ.tfLabels || ['Benar', 'Salah'];
+      const labels = currentQ.tfLabels || t.quiz.tfDefaultLabels;
       const toDisplay = (v: TrueFalseChoice | null) =>
         v === 'Benar' ? labels[0] : labels[1];
       isCorrect = currentQ.tfAnswers.every((ans, i) => selectedTF[i] === ans);
@@ -273,7 +269,7 @@ export function QuizModal({
     } else if (currentQ.type === 'short') {
       const cleaned = shortInput.trim().toLowerCase().replace(/\s+/g, ' ');
       if (!cleaned) {
-        onShowToast('⚠️ Ketik jawaban singkat kamu terlebih dahulu!', 'warning');
+        onShowToast(t.quiz.warnEnterShort, 'warning');
         return;
       }
       const cleanedNoSpace = cleaned.replace(/\s+/g, '');
@@ -299,11 +295,11 @@ export function QuizModal({
     if (isCorrect) {
       if (nextTotalAnswered % 5 === 0) {
         bonusCoins += 25;
-        bonusMsg += ' +25 Bonus Koin (5 Soal)!';
+        bonusMsg += t.quiz.bonus5Msg;
       }
       if (nextTotalAnswered % 10 === 0) {
         bonusXP += 100;
-        bonusMsg += ' +100 Bonus XP (10 Soal)!';
+        bonusMsg += t.quiz.bonus10Msg;
       }
     }
 
@@ -323,7 +319,7 @@ export function QuizModal({
     if (isCorrect) {
       setFeedbackNote({
         isCorrect: true,
-        title: `BENAR! (+${baseCoin} Koin, +${baseXP} XP)${bonusMsg}`,
+        title: t.quiz.correctFeedbackTitle(baseCoin, baseXP, bonusMsg),
         explanation: currentQ.explanation,
       });
       AudioEngine.correct();
@@ -331,7 +327,7 @@ export function QuizModal({
     } else {
       setFeedbackNote({
         isCorrect: false,
-        title: `BELUM TEPAT · Kunci Jawaban: ${correctAnswerStr}`,
+        title: t.quiz.wrongFeedbackTitle(correctAnswerStr),
         explanation: currentQ.explanation,
       });
       AudioEngine.wrong();
@@ -376,12 +372,12 @@ export function QuizModal({
 
   const timerDisplay =
     mode === 'practice'
-      ? 'Tanpa Batas'
+      ? t.quiz.unlimitedTime
       : mode === 'challenge'
       ? formatTime(Math.max(0, timeLimitSeconds - elapsedSeconds))
       : formatTime(elapsedSeconds);
 
-  const tfLabels = currentQ.tfLabels || ['Benar', 'Salah'];
+  const tfLabels = currentQ.tfLabels || t.quiz.tfDefaultLabels;
 
   return (
     <div className="fixed inset-0 z-40 bg-slate-950/80 flex items-center justify-center p-2 sm:p-5">
@@ -394,13 +390,13 @@ export function QuizModal({
                 className="px-3 py-1 rounded-xl text-white font-fredoka font-bold text-xs sm:text-sm"
                 style={{ backgroundColor: bInfo.hex }}
               >
-                Gedung {currentQ.building} · {currentQ.category}
+                {t.quiz.buildingLabel(currentQ.building)} · {currentQ.category}
               </span>
               <span className="text-xs font-bold text-purple-700">
-                {typeLabelMap[currentQ.type]}
+                {t.quiz.typeLabels[currentQ.type]}
               </span>
               <span className="text-xs font-semibold text-slate-500">
-                · {modeBadgeMap[mode]} {currentQ.source ? `· ${currentQ.source}` : ''}
+                · {t.quiz.modeBadges[mode]} {currentQ.source ? `· ${currentQ.source}` : ''}
               </span>
             </div>
 
@@ -426,10 +422,7 @@ export function QuizModal({
           {/* Progress Bar */}
           <div className="mt-3">
             <div className="flex items-center justify-between text-xs font-extrabold text-slate-600 mb-1 tabular-nums">
-              <span>
-                Soal Nomor <span className="text-sky-600 text-base">{currentIndex + 1}</span> dari{' '}
-                <span>{total}</span>
-              </span>
+              <span>{t.quiz.questionOf(currentIndex + 1, total)}</span>
               <span>{pct}%</span>
             </div>
             <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden border border-slate-300">
@@ -451,7 +444,7 @@ export function QuizModal({
             </p>
           </div>
 
-          {/* 1. PILIHAN GANDA (SINGLE) */}
+          {/* 1. SINGLE CHOICE */}
           {currentQ.type === 'single' && currentQ.options && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {ALL_OPTION_LETTERS.filter((l) => Boolean(currentQ.options?.[l])).map((letter) => {
@@ -496,11 +489,11 @@ export function QuizModal({
             </div>
           )}
 
-          {/* 2. PILIHAN GANDA KOMPLEKS (>1 JAWABAN BENAR) */}
+          {/* 2. COMPLEX MULTIPLE CHOICE (>1) */}
           {currentQ.type === 'complex' && currentQ.options && (
             <div className="space-y-2">
               <div className="text-xs font-bold text-purple-700">
-                Pilih semua pernyataan yang benar ({selectedComplex.length} dipilih):
+                {t.quiz.complexHint(selectedComplex.length)}
               </div>
               <div className="grid grid-cols-1 gap-2.5">
                 {ALL_OPTION_LETTERS.filter((l) => Boolean(currentQ.options?.[l])).map((letter) => {
@@ -547,13 +540,13 @@ export function QuizModal({
             </div>
           )}
 
-          {/* 3. BENAR / SALAH (3 PERNYATAAN) */}
+          {/* 3. TRUE / FALSE (3 STATEMENTS) */}
           {currentQ.type === 'truefalse' && currentQ.statements && currentQ.tfAnswers && (
             <div className="overflow-x-auto border border-slate-300 rounded-2xl">
               <table className="w-full text-left border-collapse text-xs sm:text-sm">
                 <thead className="bg-slate-800 text-white">
                   <tr>
-                    <th className="p-3">Pernyataan</th>
+                    <th className="p-3">{t.quiz.statementHeader}</th>
                     <th className="p-3 text-center w-24">{tfLabels[0]}</th>
                     <th className="p-3 text-center w-24">{tfLabels[1]}</th>
                   </tr>
@@ -602,11 +595,11 @@ export function QuizModal({
             </div>
           )}
 
-          {/* 4. ISIAN SINGKAT */}
+          {/* 4. SHORT ANSWER */}
           {currentQ.type === 'short' && (
             <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4">
               <label className="block text-xs font-extrabold text-sky-900 mb-2">
-                Ketik Jawaban Singkat Kamu:
+                {t.quiz.shortLabel}
               </label>
               <input
                 type="text"
@@ -616,7 +609,7 @@ export function QuizModal({
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !answered) handleSubmit();
                 }}
-                placeholder="Tulis jawaban di sini..."
+                placeholder={t.quiz.shortPlaceholder}
                 className="w-full px-4 py-3 rounded-xl border-2 border-sky-300 focus:border-sky-600 outline-none font-bold text-slate-900 bg-white text-sm sm:text-base"
               />
             </div>
@@ -640,7 +633,7 @@ export function QuizModal({
                 <span>{feedbackNote.title}</span>
               </div>
               <p className="text-xs sm:text-sm font-semibold leading-relaxed">
-                Pembahasan: {feedbackNote.explanation}
+                {t.quiz.explanationPrefix} {feedbackNote.explanation}
               </p>
             </div>
           )}
@@ -654,7 +647,7 @@ export function QuizModal({
             className="btn-3d btn-slate px-4 py-2.5 text-xs sm:text-sm"
           >
             <Building2 className="w-4 h-4" />
-            KEMBALI KE KOTA
+            {t.quiz.backToCity}
           </button>
 
           <div className="flex items-center gap-2">
@@ -665,7 +658,7 @@ export function QuizModal({
                 className="btn-3d btn-emerald px-6 py-2.5 text-sm sm:text-base"
               >
                 <Check className="w-4 h-4" />
-                JAWAB
+                {t.quiz.submitBtn}
               </button>
             ) : (
               <button
@@ -675,11 +668,11 @@ export function QuizModal({
               >
                 {currentIndex + 1 >= total ? (
                   <>
-                    <Flag className="w-4 h-4" /> LIHAT HASIL AKHIR
+                    <Flag className="w-4 h-4" /> {t.quiz.viewResultBtn}
                   </>
                 ) : (
                   <>
-                    SOAL BERIKUTNYA <ArrowRight className="w-4 h-4" />
+                    {t.quiz.nextQuestionBtn} <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </button>

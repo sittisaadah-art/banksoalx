@@ -1,12 +1,16 @@
 import { Trophy, X } from 'lucide-react';
-import { LeaderboardEntry } from '../types/edublox';
+import { getTranslations } from '../i18n/translations';
+import { LanguageCode, LeaderboardEntry } from '../types/edublox';
 
 interface LeaderboardModalProps {
   entries: LeaderboardEntry[];
+  language: LanguageCode;
   onClose: () => void;
 }
 
-export function LeaderboardModal({ entries, onClose }: LeaderboardModalProps) {
+export function LeaderboardModal({ entries, language, onClose }: LeaderboardModalProps) {
+  const t = getTranslations(language);
+
   return (
     <div className="fixed inset-0 z-40 bg-slate-950/75 flex items-center justify-center p-3 sm:p-6">
       <div className="bg-white w-full max-w-2xl rounded-3xl p-5 sm:p-6 max-h-[90vh] overflow-y-auto border-2 border-amber-300 shadow-2xl">
@@ -14,17 +18,17 @@ export function LeaderboardModal({ entries, onClose }: LeaderboardModalProps) {
           <div>
             <h2 className="font-fredoka text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
               <Trophy className="w-6 h-6 text-amber-500" />
-              Leaderboard Juara Edublox
+              {t.leaderboard.title}
             </h2>
             <p className="text-xs text-slate-500 font-semibold">
-              Peringkat Explorer Terbaik Informatika · By Sitty
+              {t.leaderboard.subtitle}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-rose-500 hover:text-white flex items-center justify-center transition"
-            aria-label="Tutup"
+            aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>
@@ -32,7 +36,7 @@ export function LeaderboardModal({ entries, onClose }: LeaderboardModalProps) {
 
         {entries.length === 0 ? (
           <div className="text-center p-8 text-slate-500 font-bold text-sm bg-slate-50 rounded-2xl border border-slate-200">
-            Belum ada catatan skor selesai. Ayo selesaikan kuis pertamamu!
+            {t.leaderboard.empty}
           </div>
         ) : (
           <div className="space-y-2 tabular-nums">
@@ -56,7 +60,7 @@ export function LeaderboardModal({ entries, onClose }: LeaderboardModalProps) {
                         </span>
                       </div>
                       <div className="text-[11px] text-slate-500">
-                        {entry.avatar} · Benar {entry.correct}/{entry.total} · {entry.time}
+                        {entry.avatar} · {t.leaderboard.correctSummary(entry.correct, entry.total)} · {entry.time}
                       </div>
                     </div>
                   </div>

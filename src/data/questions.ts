@@ -686,7 +686,7 @@ export const DEFAULT_QUESTIONS: QuestionItem[] = [
     type: 'short',
     question:
       'Seorang murid memotret sebuah bangunan bersejarah menggunakan ponselnya. Ia ingin mengetahui nama dan sejarah bangunan itu tanpa mengetik kata kunci. Fitur milik Google yang dapat mengenali objek pada gambar dan menampilkan informasi terkait dari internet disebut Google ....',
-    acceptedAnswers: ['lens', 'google lens'],
+    acceptedAnswers: ['lens', 'google lens', 'レンズ'],
     displayAnswer: 'Lens',
     explanation:
       'Google Lens adalah fitur pencarian visual berbasis gambar yang mampu mengenali objek, tempat, atau teks dari kamera/foto.',
@@ -727,7 +727,7 @@ export const DEFAULT_QUESTIONS: QuestionItem[] = [
     visualId: 'pseudocode_7_fibonacci',
     question:
       'Perhatikan Pseudocode 7! Nilai yang dicetak oleh pseudocode tersebut adalah ....',
-    acceptedAnswers: ['8', 'delapan'],
+    acceptedAnswers: ['8', 'delapan', 'eight', 'はち', 'ハチ'],
     displayAnswer: '8',
     explanation:
       'Awal: a=0, b=1. Ulangi 5 kali: (1) c=1, a=1, b=1; (2) c=2, a=1, b=2; (3) c=3, a=2, b=3; (4) c=5, a=3, b=5; (5) c=8, a=5, b=8. Maka Cetak b menampilkan 8.',
@@ -741,7 +741,17 @@ export const DEFAULT_QUESTIONS: QuestionItem[] = [
     visualId: 'gambar1_flowchart_nilai',
     question:
       'Perhatikan kembali Gambar 1! Simbol berbentuk belah ketupat yang memuat tulisan "nilai ≥ 75 ?" pada diagram alir tersebut dinamakan simbol ....',
-    acceptedAnswers: ['keputusan', 'percabangan', 'decision', 'simbol keputusan'],
+    acceptedAnswers: [
+      'keputusan',
+      'percabangan',
+      'decision',
+      'simbol keputusan',
+      'branch',
+      '判断',
+      '決定',
+      '分岐',
+      '判断記号',
+    ],
     displayAnswer: 'keputusan',
     explanation:
       'Simbol berbentuk belah ketupat pada diagram alir disebut simbol keputusan (decision/percabangan) untuk memeriksa kondisi Ya atau Tidak.',
@@ -755,7 +765,7 @@ export const DEFAULT_QUESTIONS: QuestionItem[] = [
     visualId: 'pseudocode_8_terbesar',
     question:
       'Perhatikan Pseudocode 8! Pengguna memasukkan N = 3, kemudian memasukkan bilangan 4, 9, dan 6 secara berurutan. Nilai yang dicetak oleh pseudocode tersebut adalah ....',
-    acceptedAnswers: ['9', 'sembilan'],
+    acceptedAnswers: ['9', 'sembilan', 'nine', 'きゅう', 'く'],
     displayAnswer: '9',
     explanation:
       'terbesar awal = 0. Input 4 → terbesar=4. Input 9 → terbesar=9. Input 6 → 9<6 salah, terbesar tetap 9. Cetak 9.',
@@ -768,7 +778,7 @@ export const DEFAULT_QUESTIONS: QuestionItem[] = [
     type: 'short',
     question:
       'Metode CRAAP Test digunakan untuk menilai kredibilitas sumber informasi melalui lima aspek, yaitu Currency, Relevance, Authority, Accuracy, dan Purpose. Aspek yang digunakan untuk menilai tujuan penulisan informasi, seperti edukasi, hiburan, atau promosi, adalah ....',
-    acceptedAnswers: ['purpose', 'tujuan'],
+    acceptedAnswers: ['purpose', 'tujuan', '目的'],
     displayAnswer: 'Purpose',
     explanation:
       'Purpose (tujuan) pada CRAAP Test mengevaluasi alasan dibuatnya informasi, apakah untuk mengedukasi, menghibur, meyakinkan, atau menjual/promosi.',
@@ -781,7 +791,7 @@ export const DEFAULT_QUESTIONS: QuestionItem[] = [
     type: 'short',
     question:
       'Sinta finds an article about smartphone prices that was published in 2014. She wants to use it as a reference in a report written in 2026. Which CRAAP aspect should she check first to decide whether the article is still suitable? The aspect is ....',
-    acceptedAnswers: ['currency', 'kebaruan'],
+    acceptedAnswers: ['currency', 'kebaruan', '最新性', '適時性'],
     displayAnswer: 'Currency',
     explanation:
       'Currency menilai kebaruan dan ketepatan waktu publikasi informasi. Harga ponsel tahun 2014 sudah usang untuk laporan tahun 2026.',
@@ -794,7 +804,17 @@ export const DEFAULT_QUESTIONS: QuestionItem[] = [
     type: 'short',
     question:
       'Sebuah organisasi menerima klaim viral bahwa minuman herbal tertentu dapat meningkatkan daya ingat secara drastis. Organisasi itu meneliti klaim tersebut, membandingkannya dengan sumber ilmiah, lalu menerbitkan hasil verifikasinya. Dalam ekosistem periksa fakta, organisasi tersebut berperan sebagai ... informasi.',
-    acceptedAnswers: ['pemeriksa', 'verifikator', 'pemeriksa fakta', 'pengecek'],
+    acceptedAnswers: [
+      'pemeriksa',
+      'verifikator',
+      'pemeriksa fakta',
+      'pengecek',
+      'checker',
+      'fact-checker',
+      'verifier',
+      '検証者',
+      'ファクトチェッカー',
+    ],
     displayAnswer: 'pemeriksa',
     explanation:
       'Organisasi atau pihak yang meneliti, memverifikasi, dan menerbitkan hasil cek fakta berperan sebagai pemeriksa informasi.',
@@ -808,7 +828,7 @@ export const DEFAULT_QUESTIONS: QuestionItem[] = [
     visualId: 'pseudocode_8_terbesar',
     question:
       'Perhatikan kembali Pseudocode 8! Pengguna memasukkan N = 3, kemudian memasukkan bilangan -5, -2, dan -9 secara berurutan. Nilai yang dicetak oleh pseudocode tersebut adalah ....',
-    acceptedAnswers: ['0', 'nol'],
+    acceptedAnswers: ['0', 'nol', 'zero', 'ゼロ', 'れい'],
     displayAnswer: '0',
     explanation:
       'Variabel terbesar diberi nilai awal 0. Ketika bilangan yang masuk -5, -2, dan -9, kondisi "terbesar < bilangan" (0 < -5, 0 < -2, 0 < -9) selalu salah sehingga nilai terbesar tetap 0.',

@@ -24,6 +24,7 @@ export const INITIAL_APP_STATE: AppState = {
   xp: 0,
   solvedIds: [],
   gameMode: 'adventure',
+  language: 'id',
   config: {
     gameTitle: 'EDUBLOX – INFORMATICS ADVENTURE CITY',
     className: 'X-A',

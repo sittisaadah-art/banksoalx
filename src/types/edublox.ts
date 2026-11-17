@@ -5,6 +5,7 @@ export type TrueFalseChoice = 'Benar' | 'Salah';
 export type GameMode = 'adventure' | 'challenge' | 'practice';
 export type DifficultyLevel = 'Mudah' | 'Normal' | 'Tantangan';
 export type OrnamentType = 'sakura' | 'gazebo' | 'robot' | 'picnic' | 'bench' | 'flowers' | 'infoboard';
+export type LanguageCode = 'id' | 'en' | 'ja';
 
 export type QuestionVisualId =
   | 'kode_html_program_1'
@@ -102,6 +103,7 @@ export interface AppState {
   xp: number;
   solvedIds: number[];
   gameMode: GameMode;
+  language: LanguageCode;
   config: TeacherConfig;
 }
 

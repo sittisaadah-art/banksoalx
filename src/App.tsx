@@ -11,12 +11,14 @@ import { RekapModal } from './components/RekapModal';
 import { ResultModal } from './components/ResultModal';
 import { TeacherModal } from './components/TeacherModal';
 import { AVATARS, DEFAULT_QUESTIONS } from './data/questions';
+import { getTranslations } from './i18n/translations';
 import {
   AppState,
   BuildingCode,
   CanteenItem,
   CustomOrnament,
   GameMode,
+  LanguageCode,
   OrnamentType,
   ProximityTarget,
   QuestionItem,
@@ -105,15 +107,28 @@ export default function App() {
     []
   );
 
+  const t = getTranslations(appState.language);
+
+  const handleChangeLanguage = useCallback(
+    (lang: LanguageCode) => {
+      setAppState((prev) => {
+        if (prev.language === lang) return prev;
+        const updated = { ...prev, language: lang };
+        saveAppState(updated);
+        return updated;
+      });
+      const nextT = getTranslations(lang);
+      showToast(nextT.toasts.languageChanged(nextT.languageName), 'info');
+    },
+    [showToast]
+  );
+
   const handleToggleAudio = () => {
     const next = !audioEnabled;
     AudioEngine.enabled = next;
     if (next) AudioEngine.init();
     setAudioEnabled(next);
-    showToast(
-      next ? '🔊 Musik & Efek Suara AKTIF' : '🔇 Suara NONAKTIF',
-      'info'
-    );
+    showToast(next ? t.toasts.audioOn : t.toasts.audioOff, 'info');
   };
 
   const handleStartMode = (mode: GameMode) => {
@@ -134,10 +149,7 @@ export default function App() {
         sessionKey: prev.sessionKey + 1,
       }));
     } else {
-      showToast(
-        `Selamat datang di Edublox, ${nextState.playerName}! Jelajahi 5 gedung materi!`,
-        'success'
-      );
+      showToast(t.toasts.welcomeAdventure(nextState.playerName), 'success');
     }
   };
 
@@ -176,10 +188,8 @@ export default function App() {
         const newLevelInfo = getPlayerLevel(nextXP);
         if (newLevelInfo.level > oldLevel) {
           AudioEngine.levelUp();
-          showToast(
-            `🎉 NAIK LEVEL! Sekarang kamu Level ${newLevelInfo.level}: ${newLevelInfo.title}!`,
-            'success'
-          );
+          const lvTitle = t.levels[newLevelInfo.level] || newLevelInfo.title;
+          showToast(t.toasts.levelUp(newLevelInfo.level, lvTitle), 'success');
         }
         const nextSolved =
           isCorrect && !prev.solvedIds.includes(questionId)
@@ -202,7 +212,7 @@ export default function App() {
         return next;
       });
     },
-    [showToast]
+    [showToast, t]
   );
 
   const handleFinishQuiz = (summary: QuizResultSummary) => {
@@ -238,7 +248,8 @@ export default function App() {
     name: string,
     avatarId: string,
     outfitColor: string,
-    playerCount: number
+    playerCount: number,
+    language: LanguageCode
   ) => {
     const nextState: AppState = {
       ...appState,
@@ -246,25 +257,24 @@ export default function App() {
       avatarId,
       outfitColor,
       playerCount,
+      language,
     };
     setAppState(nextState);
     saveAppState(nextState);
     cityRef.current?.rebuildPlayers(name, avatarId, outfitColor, playerCount);
     setActiveModal(null);
 
+    const nextT = getTranslations(language);
     if (isLanding) {
       handleStartMode('adventure');
     } else {
-      showToast(`✅ Karakter ${name} siap bertualang!`, 'success');
+      showToast(nextT.toasts.characterSaved(name), 'success');
     }
   };
 
   const handleBuyCanteenItem = (item: CanteenItem) => {
     if (appState.coins < item.price) {
-      showToast(
-        '🪙 Koin belum cukup! Jawab kuis untuk mengumpulkan koin.',
-        'warning'
-      );
+      showToast(t.toasts.notEnoughCoins, 'warning');
       return;
     }
     const oldLv = getPlayerLevel(appState.xp).level;
@@ -280,12 +290,11 @@ export default function App() {
     AudioEngine.coin();
     if (newLv.level > oldLv) {
       AudioEngine.levelUp();
-      showToast(
-        `🎉 NAIK LEVEL! Sekarang kamu Level ${newLv.level}: ${newLv.title}!`,
-        'success'
-      );
+      const lvTitle = t.levels[newLv.level] || newLv.title;
+      showToast(t.toasts.levelUp(newLv.level, lvTitle), 'success');
     } else {
-      showToast(`😋 Nyam! Membeli ${item.name} (+${item.xp} XP)!`, 'success');
+      const itemName = t.canteen.items[item.id]?.name || item.name;
+      showToast(t.toasts.boughtItem(itemName, item.xp), 'success');
     }
   };
 
@@ -332,11 +341,11 @@ export default function App() {
     setAutoRotate(false);
     const label =
       target === 'plaza'
-        ? 'Plaza Utama'
+        ? t.toasts.plazaLabel
         : target === 'canteen'
-        ? 'Kantin Edublox'
-        : `Gedung ${target}`;
-    showToast(`🚀 Teleportasi menuju ${label}!`, 'info');
+        ? t.toasts.canteenLabel
+        : t.toasts.buildingLabel(target);
+    showToast(t.toasts.teleportTo(label), 'info');
   };
 
   return (
@@ -385,6 +394,8 @@ export default function App() {
           arenaName={appState.config.arenaName}
           questionCount={questionBank.length}
           audioEnabled={audioEnabled}
+          language={appState.language}
+          onChangeLanguage={handleChangeLanguage}
           onToggleAudio={handleToggleAudio}
           onStartMode={handleStartMode}
           onOpenCharacter={() => setActiveModal('character')}
@@ -398,6 +409,7 @@ export default function App() {
           audioEnabled={audioEnabled}
           autoRotate={autoRotate}
           proximityTarget={proximityTarget}
+          onChangeLanguage={handleChangeLanguage}
           onToggleAudio={handleToggleAudio}
           onOpenQuiz={(b) => handleOpenQuiz(b)}
           onOpenCanteen={() => setActiveModal('canteen')}
@@ -444,6 +456,7 @@ export default function App() {
           questionBank={questionBank}
           filterBuilding={quizState.filterBuilding}
           mode={quizState.mode}
+          language={appState.language}
           playerName={appState.playerName}
           currentCoins={appState.coins}
           config={appState.config}
@@ -462,6 +475,7 @@ export default function App() {
           initialAvatarId={appState.avatarId}
           initialOutfitColor={appState.outfitColor}
           initialPlayerCount={appState.playerCount}
+          initialLanguage={appState.language}
           onSave={handleSaveCharacter}
           onClose={() => setActiveModal(null)}
         />
@@ -471,6 +485,7 @@ export default function App() {
       {activeModal === 'result' && lastResult && (
         <ResultModal
           result={lastResult}
+          language={appState.language}
           playerName={appState.playerName}
           className={appState.config.className}
           avatarId={appState.avatarId}
@@ -488,6 +503,7 @@ export default function App() {
       {activeModal === 'canteen' && (
         <CanteenModal
           coins={appState.coins}
+          language={appState.language}
           onBuyItem={handleBuyCanteenItem}
           onClose={() => setActiveModal(null)}
         />
@@ -497,6 +513,7 @@ export default function App() {
       {activeModal === 'leaderboard' && (
         <LeaderboardModal
           entries={leaderboard}
+          language={appState.language}
           onClose={() => setActiveModal(null)}
         />
       )}
@@ -506,6 +523,7 @@ export default function App() {
         <RekapModal
           logs={rekapLogs}
           leaderboard={leaderboard}
+          language={appState.language}
           onClearLogs={() => {
             setRekapLogs([]);
             saveRekapLogs([]);
